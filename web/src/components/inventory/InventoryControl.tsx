@@ -32,6 +32,18 @@ const InventoryControl: React.FC = () => {
     },
   }));
 
+  const [, rename] = useDrop<DragSource, void, any>(() => ({
+    accept: 'SLOT',
+    drop: (source) => {
+        if (source.inventory === 'player') {
+            const newName = prompt("Veuillez entrer le nouveau nom :");
+            if (newName) {
+                fetchNui('renameItem', { slot: source.item.slot, newName });
+            }
+        }
+    },
+  }));
+  
   const inputHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.valueAsNumber % 1 !== 0 || isNaN(event.target.valueAsNumber) || event.target.valueAsNumber < 0)
       event.target.valueAsNumber = 0;
@@ -45,13 +57,16 @@ const InventoryControl: React.FC = () => {
         <div className="inventory-control-wrapper">
           <input className="inventory-control-input" type="number" defaultValue={itemAmount} onChange={inputHandler} />
           <button className="inventory-control-button" ref={use}>
-            {Locale.ui_use || 'Use'}
+            {Locale.ui_use || 'Utiliser'}
           </button>
           <button className="inventory-control-button" ref={give}>
-            {Locale.ui_give || 'Give'}
+            {Locale.ui_give || 'Donner'}
           </button>
           <button className="inventory-control-button" onClick={() => fetchNui('exit')}>
-            {Locale.ui_close || 'Close'}
+            {Locale.ui_close || 'Fermer'}
+          </button>
+          <button className="inventory-control-button" ref={rename}>
+            {Locale.ui_rename || 'Renommer'}
           </button>
         </div>
       </div>

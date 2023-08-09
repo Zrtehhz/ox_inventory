@@ -4,6 +4,7 @@ import { useDrag, useDragDropManager, useDrop } from 'react-dnd';
 import { useAppDispatch, useAppSelector } from '../../store';
 import WeightBar from '../utils/WeightBar';
 import { onDrop } from '../../dnd/onDrop';
+import { fetchNui } from '../../utils/fetchNui';
 import { onBuy } from '../../dnd/onBuy';
 import { selectIsBusy } from '../../store/inventory';
 import { Items } from '../../store/items';
@@ -26,10 +27,33 @@ const InventorySlot: React.FC<SlotProps> = ({ inventory, item }) => {
   const manager = useDragDropManager();
   const isBusy = useAppSelector(selectIsBusy);
   const dispatch = useAppDispatch();
+  const [isRenaming, setIsRenaming] = React.useState(false);
+  const [tempName, setTempName] = React.useState("");
+  
 
   const canDrag = React.useCallback(() => {
     return !isBusy && canPurchaseItem(item, inventory) && canCraftItem(item, inventory.type);
   }, [item, inventory, isBusy]);
+
+  const handleRename = () => {
+    if (isSlotWithItem(item) && inventory.type === 'player') {
+      setIsRenaming(true);
+    }
+  };
+  
+  const handleDoubleClick = () => {
+    setIsRenaming(true);
+    setTempName(item.metadata?.label || Items[item.name!]?.label || item.name);
+    // Utilisez le nom actuel comme valeur initiale.
+};
+
+
+const handleRenameSubmit = () => {
+  if (tempName) {
+    fetchNui('renameItem', { slot: item.slot, newName: tempName });
+    setIsRenaming(false);
+  }
+};
 
   const [{ isDragging }, drag] = useDrag<DragSource, void, { isDragging: boolean }>(
     () => ({
@@ -120,6 +144,8 @@ const InventorySlot: React.FC<SlotProps> = ({ inventory, item }) => {
       onDrop({ item: item, inventory: inventory.type });
     } else if (event.altKey && isSlotWithItem(item) && inventory.type === 'player') {
       onUse(item);
+    } else if (event.shiftKey && isSlotWithItem(item) && inventory.type === 'player') {
+        handleRename();
     }
   };
 
@@ -217,8 +243,19 @@ const InventorySlot: React.FC<SlotProps> = ({ inventory, item }) => {
               )}
               <div className="inventory-slot-label-box">
                 <div className="inventory-slot-label-text">
-                  {item.metadata?.label ? item.metadata.label : Items[item.name]?.label || item.name}
-                </div>
+    { isRenaming ? (
+    <input 
+      value={tempName}
+      onChange={(e) => setTempName(e.target.value)}
+      onBlur={handleRenameSubmit}
+      onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit()}
+    />
+  ) : (
+    item.metadata?.label || Items[item.name]?.label || item.name
+  )
+}
+</div>
+
               </div>
             </div>
           </div>

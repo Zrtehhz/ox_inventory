@@ -57,6 +57,12 @@ const InventoryContext: React.FC = () => {
       case 'drop':
         isSlotWithItem(item) && onDrop({ item: item, inventory: 'player' });
         break;
+        case 'rename':
+          const newName = prompt("Veuillez entrer le nouveau nom :");
+          if (newName) {
+              fetchNui('renameItem', { slot: item.slot, newName }); 
+          }
+          break;
       case 'remove':
         fetchNui('removeComponent', { component: data?.component, slot: data?.slot });
         break;
@@ -109,9 +115,10 @@ const InventoryContext: React.FC = () => {
         }
         onClose={() => dispatch(setContextMenu({ coords: null }))}
       >
-        <MenuItem onClick={() => handleClick({ action: 'use' })}>{Locale.ui_use || 'Use'}</MenuItem>
-        <MenuItem onClick={() => handleClick({ action: 'give' })}>{Locale.ui_give || 'Give'}</MenuItem>
-        <MenuItem onClick={() => handleClick({ action: 'drop' })}>{Locale.ui_drop || 'Drop'}</MenuItem>
+        <MenuItem onClick={() => handleClick({ action: 'use' })}>{Locale.ui_use || 'Utiliser'}</MenuItem>
+        <MenuItem onClick={() => handleClick({ action: 'give' })}>{Locale.ui_give || 'Donner'}</MenuItem>
+        <MenuItem onClick={() => handleClick({ action: 'drop' })}>{Locale.ui_drop || 'Jeter'}</MenuItem>
+        <MenuItem onClick={() => handleClick({ action: 'rename' })}>{Locale.ui_rename || 'Renommer'}</MenuItem>
         {item && item.metadata?.serial && <Divider />}
         {item && item.metadata?.ammo > 0 && (
           <MenuItem onClick={() => handleClick({ action: 'removeAmmo' })}>{Locale.ui_remove_ammo}</MenuItem>
